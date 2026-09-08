@@ -1,0 +1,244 @@
+<template>
+  <lightning-card
+    title="Apex Test Scheduler"
+    icon-name="standard:apex_plugin_form"
+  >
+    <div class="slds-p-horizontal_medium slds-p-bottom_medium">
+      <template if:true={isLoading}>
+        <lightning-spinner
+          alternative-text="Loading"
+          size="medium"
+        ></lightning-spinner>
+      </template>
+
+      <template if:false={isLoading}>
+        <template if:true={errorMessage}>
+          <div
+            class="slds-notify slds-notify_alert slds-theme_error"
+            role="alert"
+          >
+            <span>{errorMessage}</span>
+          </div>
+        </template>
+
+        <div class="slds-grid slds-gutters slds-wrap">
+          <!-- Configuration column -->
+          <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+            <h2 class="slds-text-heading_small slds-p-bottom_small">
+              Schedule configuration
+            </h2>
+
+            <lightning-input
+              type="toggle"
+              label="Active"
+              checked={active}
+              onchange={handleActiveChange}
+            ></lightning-input>
+
+            <lightning-input
+              type="checkbox"
+              label="Run all Apex test classes"
+              checked={runAllTests}
+              onchange={handleRunAllChange}
+              class="slds-p-top_small"
+            ></lightning-input>
+
+            <template if:false={selectionDisabled}>
+              <div class="slds-p-top_small">
+                <lightning-input
+                  type="search"
+                  label="Search Apex test classes"
+                  value={searchTerm}
+                  onchange={handleSearchChange}
+                ></lightning-input>
+                <template if:true={classOptionItems.length}>
+                  <ul
+                    class="slds-p-top_x-small"
+                    style="max-height: 220px; overflow-y: auto"
+                  >
+                    <template for:each={classOptionItems} for:item="option">
+                      <li key={option.classId}>
+                        <lightning-input
+                          type="checkbox"
+                          label={option.className}
+                          checked={option.checked}
+                          data-class-id={option.classId}
+                          onchange={handleClassToggle}
+                        ></lightning-input>
+                      </li>
+                    </template>
+                  </ul>
+                </template>
+                <template if:false={classOptionItems.length}>
+                  <p
+                    class="slds-text-body_small slds-text-color_weak slds-p-top_x-small"
+                  >
+                    No matching test classes found.
+                  </p>
+                </template>
+              </div>
+            </template>
+
+            <fieldset class="slds-p-top_small">
+              <legend
+                class="slds-form-element__legend slds-form-element__label"
+              >
+                Days of week
+              </legend>
+              <div class="slds-grid slds-wrap slds-gutters_xx-small">
+                <template for:each={weekdayItems} for:item="day">
+                  <div key={day.key} class="slds-col">
+                    <lightning-input
+                      type="checkbox"
+                      label={day.label}
+                      checked={day.checked}
+                      data-day={day.key}
+                      onchange={handleDayToggle}
+                    ></lightning-input>
+                  </div>
+                </template>
+              </div>
+            </fieldset>
+
+            <lightning-input
+              type="time"
+              label="Run time"
+              value={runTimeValue}
+              onchange={handleTimeChange}
+              class="slds-p-top_small"
+            ></lightning-input>
+
+            <div class="slds-p-top_small">
+              <span class="slds-form-element__label">Time zone</span>
+              <p class="slds-text-body_small">{timeZoneDisplay}</p>
+            </div>
+
+            <lightning-textarea
+              label="Notification recipients (comma-separated emails)"
+              value={notificationRecipients}
+              onchange={handleRecipientsChange}
+              class="slds-p-top_small"
+            ></lightning-textarea>
+
+            <div
+              class="slds-p-top_medium slds-grid slds-gutters_x-small slds-wrap"
+            >
+              <div class="slds-col">
+                <lightning-button
+                  variant="brand"
+                  label={saveButtonLabel}
+                  onclick={handleSave}
+                  disabled={isSaving}
+                ></lightning-button>
+              </div>
+              <div class="slds-col">
+                <lightning-button
+                  label="Run Now"
+                  onclick={handleRunNow}
+                  disabled={runNowDisabled}
+                ></lightning-button>
+              </div>
+              <template if:true={hasSchedule}>
+                <div class="slds-col">
+                  <lightning-button
+                    label="Deactivate"
+                    onclick={handleDeactivate}
+                    disabled={isSaving}
+                  ></lightning-button>
+                </div>
+                <div class="slds-col">
+                  <lightning-button
+                    label="Delete"
+                    variant="destructive"
+                    onclick={handleDelete}
+                    disabled={isSaving}
+                  ></lightning-button>
+                </div>
+              </template>
+            </div>
+          </div>
+
+          <!-- Status column -->
+          <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
+            <h2 class="slds-text-heading_small slds-p-bottom_small">
+              Current schedule
+            </h2>
+            <template if:true={hasSchedule}>
+              <p><strong>Status:</strong> {active}</p>
+              <p><strong>Cron expression:</strong> {cronExpression}</p>
+            </template>
+            <template if:false={hasSchedule}>
+              <p class="slds-text-body_small slds-text-color_weak">
+                No schedule has been saved yet.
+              </p>
+            </template>
+
+            <h2
+              class="slds-text-heading_small slds-p-top_medium slds-p-bottom_small"
+            >
+              Latest run
+            </h2>
+            <template if:true={latestRun}>
+              <p><strong>Status:</strong> {latestRun.status}</p>
+              <p><strong>Started:</strong> {latestRun.startedDate}</p>
+              <p><strong>Completed:</strong> {latestRun.completedDate}</p>
+              <p>
+                <strong>Total / Passed / Failed:</strong> {latestRun.totalTests}
+                / {latestRun.passedTests} / {latestRun.failedTests}
+              </p>
+              <template if:true={latestRun.failureDetails}>
+                <p class="slds-text-body_small">
+                  <strong>Failure details:</strong>
+                </p>
+                <pre class="slds-text-body_small">
+{latestRun.failureDetails}</pre>
+              </template>
+            </template>
+            <template if:false={latestRun}>
+              <p class="slds-text-body_small slds-text-color_weak">
+                No test runs yet.
+              </p>
+            </template>
+
+            <h2
+              class="slds-text-heading_small slds-p-top_medium slds-p-bottom_small"
+            >
+              Recent execution history
+            </h2>
+            <template if:true={hasRecentRuns}>
+              <table
+                class="slds-table slds-table_bordered slds-table_cell-buffer"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col">Status</th>
+                    <th scope="col">Started</th>
+                    <th scope="col">Total</th>
+                    <th scope="col">Passed</th>
+                    <th scope="col">Failed</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template for:each={recentRuns} for:item="run">
+                    <tr key={run.runId}>
+                      <td>{run.status}</td>
+                      <td>{run.startedDate}</td>
+                      <td>{run.totalTests}</td>
+                      <td>{run.passedTests}</td>
+                      <td>{run.failedTests}</td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </template>
+            <template if:false={hasRecentRuns}>
+              <p class="slds-text-body_small slds-text-color_weak">
+                No execution history yet.
+              </p>
+            </template>
+          </div>
+        </div>
+      </template>
+    </div>
+  </lightning-card>
+</template>

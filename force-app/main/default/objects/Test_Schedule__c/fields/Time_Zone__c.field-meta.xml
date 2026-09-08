@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Time_Zone__c</fullName>
+    <label>Time Zone</label>
+    <type>Text</type>
+    <length>80</length>
+    <description
+  >Time zone the schedule runs in, captured automatically from the saving user (System.schedule uses the scheduling user's time zone). Display only.</description>
+</CustomField>
