@@ -4,7 +4,7 @@
     <label>Apex Class Name</label>
     <type>Text</type>
     <length>255</length>
-    <required>true</required>
+    <required>false</required>
     <description
-  >Denormalized ApexClass name captured at selection time, for display without an extra query.</description>
+  >Denormalized ApexClass name captured at selection time, for display without an extra query. Not required at the metadata level so a permission-set field permission can be granted (see Apex_Class_Id__c).</description>
 </CustomField>

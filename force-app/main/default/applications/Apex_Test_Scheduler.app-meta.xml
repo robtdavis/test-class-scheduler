@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<CustomApplication xmlns="http://soap.sforce.com/2006/04/metadata">
+    <label>Apex Test Scheduler</label>
+    <description
+  >Administrator app for scheduling, running, and monitoring Apex test class execution.</description>
+    <formFactors>Large</formFactors>
+    <isNavAutoTempTabsDisabled>false</isNavAutoTempTabsDisabled>
+    <isNavPersonalizationDisabled>false</isNavPersonalizationDisabled>
+    <navType>Standard</navType>
+    <tabs>Apex_Test_Scheduler</tabs>
+    <uiType>Lightning</uiType>
+</CustomApplication>

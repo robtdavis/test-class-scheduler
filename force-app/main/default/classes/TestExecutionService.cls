@@ -3,14 +3,16 @@
  * callout-free mechanism for enqueuing asynchronous test execution - see ApexTestQueueItem object
  * reference). Bulk-inserting the queue items for all target classes in one DML statement gives them
  * a shared ParentJobId, which is the AsyncApexJobId used to track the run via ApexTestRunResult.
- * Monitoring that run to completion and sending the notification email are handled by
- * TestRunMonitor/TestNotificationService in a later increment; this service only starts the run and
- * records a Test_Run__c row in "Queued" status.
+ * TestMonitoringService takes over from here to poll the run to completion and send the
+ * notification email; this service only starts the run and records a Test_Run__c row in "Queued"
+ * status, plus the concurrency guard (row lock + active-run check) and opportunistic stale-run
+ * recovery that keep that guard reliable.
  */
 public with sharing class TestExecutionService {
   private final TestRunSelector runSelector = new TestRunSelector();
   private final TestClassSelector classSelector = new TestClassSelector();
   private final ITestRunGateway gateway;
+  private final TestMonitoringService monitoringService = new TestMonitoringService();
 
   public TestExecutionService() {
     this(new ApexTestQueueGateway());
@@ -32,7 +34,14 @@ public with sharing class TestExecutionService {
   }
 
   private Id enqueueRun(Id scheduleId) {
-    Test_Schedule__c schedule = runSelector.getScheduleById(scheduleId);
+    // Opportunistic safety net: recover any run (any schedule) stuck past the stale threshold
+    // before evaluating this schedule's own active-run guard below.
+    monitoringService.recoverStaleRuns();
+
+    // Locks the schedule row for the rest of this transaction so a second concurrent Run
+    // Now/scheduled-fire attempt for the same schedule blocks here instead of racing past the
+    // active-run check below (classic check-then-act TOCTOU otherwise).
+    Test_Schedule__c schedule = runSelector.lockSchedule(scheduleId);
     if (schedule == null) {
       throw new TestExecutionException('Schedule not found.');
     }
@@ -73,6 +82,8 @@ public with sharing class TestExecutionService {
       Notification_Recipients__c = schedule.Notification_Recipients__c
     );
     Database.insert(new List<Test_Run__c>{ run }, AccessLevel.USER_MODE);
+
+    monitoringService.startMonitoring(run.Id);
 
     return run.Id;
   }

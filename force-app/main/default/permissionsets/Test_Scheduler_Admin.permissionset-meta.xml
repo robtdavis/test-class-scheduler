@@ -19,6 +19,16 @@
         <enabled>true</enabled>
     </classAccesses>
 
+    <tabSettings>
+        <tab>Apex_Test_Scheduler</tab>
+        <visibility>Visible</visibility>
+    </tabSettings>
+
+    <applicationVisibilities>
+        <application>Apex_Test_Scheduler</application>
+        <visible>true</visible>
+    </applicationVisibilities>
+
     <objectPermissions>
         <object>Test_Schedule__c</object>
         <allowCreate>true</allowCreate>
@@ -180,6 +190,22 @@
     </fieldPermissions>
     <fieldPermissions>
         <field>Test_Run__c.Notification_Recipients__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Test_Run__c.Coverage_Percent__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+
+    <fieldPermissions>
+        <field>Test_Schedule_Class__c.Apex_Class_Id__c</field>
+        <readable>true</readable>
+        <editable>true</editable>
+    </fieldPermissions>
+    <fieldPermissions>
+        <field>Test_Schedule_Class__c.Apex_Class_Name__c</field>
         <readable>true</readable>
         <editable>true</editable>
     </fieldPermissions>

@@ -4,9 +4,9 @@
     <label>Apex Class Id</label>
     <type>Text</type>
     <length>18</length>
-    <required>true</required>
+    <required>false</required>
     <externalId>true</externalId>
     <unique>false</unique>
     <description
-  >Id of the ApexClass to include in the scheduled run. ApexClass cannot be a custom lookup target, so the Id/Name are stored as plain fields.</description>
+  >Id of the ApexClass to include in the scheduled run. ApexClass cannot be a custom lookup target, so the Id/Name are stored as plain fields. Not required at the metadata level (so permission-set field permissions can be granted on it - Salesforce disallows fieldPermissions entries for required fields); populated-ness is validated in TestSchedulerService.</description>
 </CustomField>
