@@ -174,7 +174,7 @@ export default class ApexTestScheduler extends LightningElement {
   }
 
   handleRecipientsChange(event) {
-    this.notificationRecipients = event.target.value;
+    this.notificationRecipients = event.detail.value;
   }
 
   handleDayToggle(event) {

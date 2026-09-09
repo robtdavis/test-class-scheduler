@@ -149,6 +149,40 @@ describe("c-apex-test-scheduler", () => {
     expect(saveSchedule).toHaveBeenCalled();
   });
 
+  it.each(["admin@example.com", "admin@example.com, second@example.com", ""])(
+    "sends the current textarea recipients when saving: %s",
+    async (recipients) => {
+      getScheduleConfiguration.mockResolvedValue(null);
+      getTestClassOptions.mockResolvedValue([]);
+      saveSchedule.mockResolvedValue(null);
+      const element = createElement("c-apex-test-scheduler", {
+        is: ApexTestScheduler
+      });
+      document.body.appendChild(element);
+      await flushPromises();
+
+      const textarea = element.shadowRoot.querySelector("lightning-textarea");
+      textarea.dispatchEvent(
+        new CustomEvent("change", { detail: { value: "old@example.com" } })
+      );
+      await flushPromises();
+      textarea.dispatchEvent(
+        new CustomEvent("change", { detail: { value: recipients } })
+      );
+      const saveButton = Array.from(
+        element.shadowRoot.querySelectorAll("lightning-button")
+      ).find((button) => button.label === "Save Schedule");
+      saveButton.click();
+      await flushPromises();
+
+      expect(saveSchedule).toHaveBeenCalledWith({
+        scheduleInput: expect.objectContaining({
+          notificationRecipients: recipients
+        })
+      });
+    }
+  );
+
   it("surfaces an apex error message", async () => {
     getScheduleConfiguration.mockRejectedValue({ body: { message: "Boom" } });
     getTestClassOptions.mockResolvedValue([]);
