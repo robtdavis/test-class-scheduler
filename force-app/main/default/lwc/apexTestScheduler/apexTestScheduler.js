@@ -221,7 +221,7 @@ export default class ApexTestScheduler extends LightningElement {
         selectedClassIds: this.selectionDisabled ? [] : this.selectedClassIds,
         ...this.weekdayState
       };
-      const saved = await saveSchedule(input);
+      const saved = await saveSchedule({ scheduleInput: input });
       this.applyConfig(saved);
       this.recentRuns = this.scheduleId
         ? await getRecentRuns({ scheduleId: this.scheduleId, maxResults: 5 })
