@@ -6,37 +6,41 @@
  */
 public class TestScheduleDTO {
   @AuraEnabled
-  public Id scheduleId;
+  public Id scheduleId { get; set; }
   @AuraEnabled
-  public Boolean active;
+  public Boolean active { get; set; }
   @AuraEnabled
-  public Boolean runAllTests;
+  public Boolean runAllTests { get; set; }
   @AuraEnabled
-  public Integer runTimeHour;
+  public Integer runTimeHour { get; set; }
   @AuraEnabled
-  public Integer runTimeMinute;
+  public Integer runTimeMinute { get; set; }
   @AuraEnabled
-  public String timeZone;
+  public String timeZone { get; set; }
   @AuraEnabled
-  public Boolean sunday;
+  public Boolean sunday { get; set; }
   @AuraEnabled
-  public Boolean monday;
+  public Boolean monday { get; set; }
   @AuraEnabled
-  public Boolean tuesday;
+  public Boolean tuesday { get; set; }
   @AuraEnabled
-  public Boolean wednesday;
+  public Boolean wednesday { get; set; }
   @AuraEnabled
-  public Boolean thursday;
+  public Boolean thursday { get; set; }
   @AuraEnabled
-  public Boolean friday;
+  public Boolean friday { get; set; }
   @AuraEnabled
-  public Boolean saturday;
+  public Boolean saturday { get; set; }
   @AuraEnabled
-  public String notificationRecipients;
+  public String notificationRecipients { get; set; }
   @AuraEnabled
-  public String cronExpression;
+  public String cronExpression { get; set; }
   @AuraEnabled
-  public String cronJobId;
+  public String cronJobId { get; set; }
   @AuraEnabled
-  public List<Id> selectedClassIds = new List<Id>();
+  public List<Id> selectedClassIds { get; set; }
+
+  public TestScheduleDTO() {
+    selectedClassIds = new List<Id>();
+  }
 }
