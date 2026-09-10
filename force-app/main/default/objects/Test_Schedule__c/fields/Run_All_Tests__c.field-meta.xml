@@ -1,9 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Run_All_Tests__c</fullName>
-    <label>Run All Tests</label>
-    <type>Checkbox</type>
     <defaultValue>false</defaultValue>
     <description
   >When true, all Apex test classes in the org are run; otherwise only the related Test_Schedule_Class__c selections run.</description>
+    <label>Run All Tests</label>
+    <trackTrending>false</trackTrending>
+    <type>Checkbox</type>
 </CustomField>

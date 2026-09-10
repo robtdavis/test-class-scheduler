@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Status__c</fullName>
-    <label>Status</label>
-    <type>Text</type>
-    <length>20</length>
     <description
-  >One of Queued, Preparing, Processing, Completed, Failed, Aborted (mirrors ApexTestRunResult.Status); enforced in Apex, not as a picklist, to keep values in sync with the platform's own status values.</description>
+  >One of Queued, Preparing, Processing, Completed, Failed, Aborted (mirrors ApexTestRunResult.Status); enforced in Apex, not as a picklist, to keep values in sync with the platform&apos;s own status values.</description>
+    <externalId>false</externalId>
+    <label>Status</label>
+    <length>20</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
 </CustomField>

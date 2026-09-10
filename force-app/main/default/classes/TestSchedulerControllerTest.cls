@@ -116,4 +116,39 @@ private class TestSchedulerControllerTest {
     System.assertEquals(1, recent.size());
     System.assertEquals(runResult.runId, recent[0].runId);
   }
+
+  @isTest
+  static void getSchedules_returnsAllAndPlatformTiming() {
+    TestScheduleDTO input = new TestScheduleDTO();
+    input.active = true;
+    input.runAllTests = true;
+    input.runTimeHour = 7;
+    input.runTimeMinute = 15;
+    input.friday = true;
+    input.notificationRecipients = 'admin@example.com';
+    TestScheduleDTO first = TestSchedulerController.saveSchedule(input);
+    Test_Schedule__c secondRecord = new TestRunSelector()
+      .getScheduleById(first.scheduleId)
+      .clone(false, false, false, false);
+    secondRecord.Active__c = false;
+    secondRecord.Cron_Job_Id__c = null;
+    insert secondRecord;
+    Integer beforeQueries = Limits.getQueries();
+    List<TestScheduleDTO> rows = TestSchedulerController.getSchedules();
+    System.assertEquals(
+      3,
+      Limits.getQueries() - beforeQueries,
+      'List query count must stay constant'
+    );
+    System.assertEquals(2, rows.size());
+    Map<Id, TestScheduleDTO> byId = new Map<Id, TestScheduleDTO>();
+    for (TestScheduleDTO row : rows)
+      byId.put(row.scheduleId, row);
+    System.assertNotEquals(null, byId.get(first.scheduleId).nextRun);
+    System.assertEquals('WAITING', byId.get(first.scheduleId).jobState);
+    System.assertNotEquals(null, byId.get(first.scheduleId).scheduleName);
+    System.assertEquals('Inactive', byId.get(secondRecord.Id).jobState);
+    System.assertEquals(null, byId.get(secondRecord.Id).nextRun);
+    TestSchedulerController.deactivateSchedule(first.scheduleId);
+  }
 }

@@ -2,10 +2,12 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Test_Schedule__c</fullName>
     <label>Test Schedule</label>
-    <type>MasterDetail</type>
     <referenceTo>Test_Schedule__c</referenceTo>
-    <relationshipName>Test_Schedule_Classes</relationshipName>
     <relationshipLabel>Test Schedule Classes</relationshipLabel>
-    <writeRequiresMasterRead>false</writeRequiresMasterRead>
+    <relationshipName>Test_Schedule_Classes</relationshipName>
+    <relationshipOrder>0</relationshipOrder>
     <reparentableMasterDetail>false</reparentableMasterDetail>
+    <trackTrending>false</trackTrending>
+    <type>MasterDetail</type>
+    <writeRequiresMasterRead>false</writeRequiresMasterRead>
 </CustomField>

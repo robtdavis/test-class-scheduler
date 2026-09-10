@@ -2,7 +2,8 @@
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Summary__c</fullName>
     <label>Summary</label>
-    <type>LongTextArea</type>
     <length>4000</length>
+    <trackTrending>false</trackTrending>
+    <type>LongTextArea</type>
     <visibleLines>5</visibleLines>
 </CustomField>

@@ -1,10 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Coverage_Percent__c</fullName>
-    <label>Coverage Percent</label>
-    <type>Number</type>
-    <precision>5</precision>
-    <scale>2</scale>
     <description
   >Org-wide Apex code coverage percentage at completion, when available. Real code coverage aggregates (ApexCodeCoverageAggregate/ApexOrgWideCoverage) are Tooling-API-only and require a Named Credential the admin configures manually (see README); left blank when not configured or unavailable rather than showing a fabricated value.</description>
+    <externalId>false</externalId>
+    <label>Coverage Percent</label>
+    <precision>5</precision>
+    <required>false</required>
+    <scale>2</scale>
+    <trackTrending>false</trackTrending>
+    <type>Number</type>
+    <unique>false</unique>
 </CustomField>

@@ -6,6 +6,14 @@
  */
 public class TestScheduleDTO {
   @AuraEnabled
+  public String scheduleName { get; set; }
+  @AuraEnabled
+  public String jobState { get; set; }
+  @AuraEnabled
+  public Datetime nextRun { get; set; }
+  @AuraEnabled
+  public Datetime previousRun { get; set; }
+  @AuraEnabled
   public Id scheduleId { get; set; }
   @AuraEnabled
   public Boolean active { get; set; }

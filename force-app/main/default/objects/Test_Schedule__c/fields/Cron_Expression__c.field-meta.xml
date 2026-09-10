@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
     <fullName>Cron_Expression__c</fullName>
-    <label>Cron Expression</label>
-    <type>Text</type>
-    <length>100</length>
     <description
   >The generated Salesforce CRON expression currently scheduled.</description>
+    <externalId>false</externalId>
+    <label>Cron Expression</label>
+    <length>100</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
 </CustomField>

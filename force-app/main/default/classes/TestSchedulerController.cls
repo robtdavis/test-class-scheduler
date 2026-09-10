@@ -33,6 +33,50 @@ public with sharing class TestSchedulerController {
   }
 
   @AuraEnabled
+  public static List<TestScheduleDTO> getSchedules() {
+    try {
+      TestRunSelector selector = new TestRunSelector();
+      List<Test_Schedule__c> records = selector.getAllSchedules();
+      Set<Id> scheduleIds = new Map<Id, Test_Schedule__c>(records).keySet();
+      Set<Id> triggerIds = new Set<Id>();
+      Map<Id, List<Id>> classes = new Map<Id, List<Id>>();
+      for (Test_Schedule__c record : records) {
+        classes.put(record.Id, new List<Id>());
+        if (String.isNotBlank(record.Cron_Job_Id__c))
+          triggerIds.add((Id) record.Cron_Job_Id__c);
+      }
+      for (
+        Test_Schedule_Class__c junction : selector.getClassesForSchedules(
+          scheduleIds
+        )
+      ) {
+        classes.get(junction.Test_Schedule__c)
+          .add((Id) junction.Apex_Class_Id__c);
+      }
+      Map<Id, CronTrigger> triggers = selector.getScheduleTriggers(triggerIds);
+      List<TestScheduleDTO> results = new List<TestScheduleDTO>();
+      for (Test_Schedule__c record : records) {
+        TestScheduleDTO dto = toDto(record, classes.get(record.Id));
+        CronTrigger cronTrigger = String.isBlank(record.Cron_Job_Id__c)
+          ? null
+          : triggers.get((Id) record.Cron_Job_Id__c);
+        dto.jobState = !record.Active__c
+          ? 'Inactive'
+          : cronTrigger == null ? 'Missing job' : cronTrigger.State;
+        if (cronTrigger != null) {
+          dto.nextRun = cronTrigger.NextFireTime;
+          dto.previousRun = cronTrigger.PreviousFireTime;
+          dto.timeZone = cronTrigger.TimeZoneSidKey;
+        }
+        results.add(dto);
+      }
+      return results;
+    } catch (Exception ex) {
+      throw wrap(ex);
+    }
+  }
+
+  @AuraEnabled
   public static TestScheduleDTO saveSchedule(TestScheduleDTO scheduleInput) {
     try {
       return new TestSchedulerService().saveSchedule(scheduleInput);
@@ -100,9 +144,24 @@ public with sharing class TestSchedulerController {
   }
 
   private static TestScheduleDTO toDto(Test_Schedule__c record) {
+    List<Id> classIds = new List<Id>();
+    for (
+      Test_Schedule_Class__c junction : new TestRunSelector()
+        .getSelectedClasses(record.Id)
+    ) {
+      classIds.add((Id) junction.Apex_Class_Id__c);
+    }
+    return toDto(record, classIds);
+  }
+
+  private static TestScheduleDTO toDto(
+    Test_Schedule__c record,
+    List<Id> classIds
+  ) {
     // Delegates field mapping to the service, which already builds this DTO shape on save.
     TestScheduleDTO dto = new TestScheduleDTO();
     dto.scheduleId = record.Id;
+    dto.scheduleName = record.Name;
     dto.active = record.Active__c;
     dto.runAllTests = record.Run_All_Tests__c;
     dto.runTimeHour = record.Run_Time__c != null
@@ -122,13 +181,6 @@ public with sharing class TestSchedulerController {
     dto.notificationRecipients = record.Notification_Recipients__c;
     dto.cronExpression = record.Cron_Expression__c;
     dto.cronJobId = record.Cron_Job_Id__c;
-    List<Id> classIds = new List<Id>();
-    for (
-      Test_Schedule_Class__c junction : new TestRunSelector()
-        .getSelectedClasses(record.Id)
-    ) {
-      classIds.add((Id) junction.Apex_Class_Id__c);
-    }
     dto.selectedClassIds = classIds;
     return dto;
   }

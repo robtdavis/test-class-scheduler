@@ -26,6 +26,28 @@ public inherited sharing class TestRunSelector {
     );
   }
 
+  public List<Test_Schedule_Class__c> getClassesForSchedules(
+    Set<Id> scheduleIds
+  ) {
+    return [
+      SELECT Test_Schedule__c, Apex_Class_Id__c
+      FROM Test_Schedule_Class__c
+      WHERE Test_Schedule__c IN :scheduleIds
+      WITH USER_MODE
+    ];
+  }
+
+  public Map<Id, CronTrigger> getScheduleTriggers(Set<Id> triggerIds) {
+    // IDs originate only from schedule records the caller can read.
+    return new Map<Id, CronTrigger>(
+      [
+        SELECT Id, State, NextFireTime, PreviousFireTime, TimeZoneSidKey
+        FROM CronTrigger
+        WHERE Id IN :triggerIds
+      ]
+    );
+  }
+
   public Test_Schedule__c getScheduleById(Id scheduleId) {
     List<Test_Schedule__c> results = Database.query(
       'SELECT ' +

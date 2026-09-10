@@ -21,6 +21,89 @@
           </div>
         </template>
 
+        <section aria-label="Existing schedules" class="slds-p-vertical_medium">
+          <h2 class="slds-text-heading_small">Existing schedules</h2>
+          <div class="slds-p-vertical_small">
+            <lightning-button
+              label="Refresh"
+              onclick={loadAll}
+              disabled={isSaving}
+            ></lightning-button>
+          </div>
+          <template if:true={schedules.length}>
+            <div class="slds-scrollable_x">
+              <table
+                class="slds-table slds-table_bordered slds-table_cell-buffer"
+                aria-label="Existing schedules"
+              >
+                <thead>
+                  <tr>
+                    <th scope="col">Schedule</th>
+                    <th scope="col">Tests</th>
+                    <th scope="col">Frequency</th>
+                    <th scope="col">Time zone</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Next run</th>
+                    <th scope="col">Previous run</th>
+                    <th scope="col">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <template for:each={scheduleRows} for:item="schedule">
+                    <tr key={schedule.scheduleId}>
+                      <th scope="row">{schedule.displayName}</th>
+                      <td>{schedule.scope}</td>
+                      <td>{schedule.frequency}</td>
+                      <td>{schedule.timeZone}</td>
+                      <td>{schedule.status}</td>
+                      <td>
+                        <template if:true={schedule.nextRun}
+                          ><lightning-formatted-date-time
+                            value={schedule.nextRun}
+                            time-zone={schedule.timeZone}
+                            year="numeric"
+                            month="short"
+                            day="2-digit"
+                            hour="2-digit"
+                            minute="2-digit"
+                          ></lightning-formatted-date-time></template
+                        ><template if:false={schedule.nextRun}>—</template>
+                      </td>
+                      <td>
+                        <template if:true={schedule.previousRun}
+                          ><lightning-formatted-date-time
+                            value={schedule.previousRun}
+                            time-zone={schedule.timeZone}
+                            year="numeric"
+                            month="short"
+                            day="2-digit"
+                            hour="2-digit"
+                            minute="2-digit"
+                          ></lightning-formatted-date-time></template
+                        ><template if:false={schedule.previousRun}>—</template>
+                      </td>
+                      <td>
+                        <lightning-button
+                          label={schedule.selectedLabel}
+                          data-id={schedule.scheduleId}
+                          onclick={handleSelectSchedule}
+                          disabled={isSaving}
+                        ></lightning-button>
+                      </td>
+                    </tr>
+                  </template>
+                </tbody>
+              </table>
+            </div>
+            <p class="slds-p-top_small">
+              Select a schedule to edit, deactivate, delete, or view its
+              execution history below. Times use the schedule's time zone.
+            </p>
+          </template>
+          <template if:false={schedules.length}
+            ><p>No saved schedules.</p></template
+          >
+        </section>
         <div class="slds-grid slds-gutters slds-wrap">
           <!-- Configuration column -->
           <div class="slds-col slds-size_1-of-1 slds-large-size_1-of-2">
@@ -164,7 +247,7 @@
               Current schedule
             </h2>
             <template if:true={hasSchedule}>
-              <p><strong>Status:</strong> {active}</p>
+              <p><strong>Status:</strong> {activeLabel}</p>
               <p><strong>Cron expression:</strong> {cronExpression}</p>
             </template>
             <template if:false={hasSchedule}>

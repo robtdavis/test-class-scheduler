@@ -1,12 +1,12 @@
 import { createElement } from "lwc";
 import ApexTestScheduler from "c/apexTestScheduler";
-import getScheduleConfiguration from "@salesforce/apex/TestSchedulerController.getScheduleConfiguration";
+import getSchedules from "@salesforce/apex/TestSchedulerController.getSchedules";
 import getTestClassOptions from "@salesforce/apex/TestSchedulerController.getTestClassOptions";
 import saveSchedule from "@salesforce/apex/TestSchedulerController.saveSchedule";
 import getRecentRuns from "@salesforce/apex/TestSchedulerController.getRecentRuns";
 
 jest.mock(
-  "@salesforce/apex/TestSchedulerController.getScheduleConfiguration",
+  "@salesforce/apex/TestSchedulerController.getSchedules",
   () => ({ default: jest.fn() }),
   { virtual: true }
 );
@@ -56,7 +56,7 @@ describe("c-apex-test-scheduler", () => {
   });
 
   it("shows a spinner while loading", () => {
-    getScheduleConfiguration.mockResolvedValue(null);
+    getSchedules.mockResolvedValue([]);
     getTestClassOptions.mockResolvedValue([]);
 
     const element = createElement("c-apex-test-scheduler", {
@@ -69,7 +69,7 @@ describe("c-apex-test-scheduler", () => {
   });
 
   it("shows an empty schedule state when no schedule exists", async () => {
-    getScheduleConfiguration.mockResolvedValue(null);
+    getSchedules.mockResolvedValue([]);
     getTestClassOptions.mockResolvedValue([]);
 
     const element = createElement("c-apex-test-scheduler", {
@@ -85,18 +85,20 @@ describe("c-apex-test-scheduler", () => {
   });
 
   it("renders saved schedule details and recent runs", async () => {
-    getScheduleConfiguration.mockResolvedValue({
-      scheduleId: "a01000000000001AAA",
-      active: true,
-      runAllTests: true,
-      runTimeHour: 9,
-      runTimeMinute: 30,
-      timeZone: "America/New_York",
-      monday: true,
-      notificationRecipients: "admin@example.com",
-      cronExpression: "0 30 9 ? * MON",
-      selectedClassIds: []
-    });
+    getSchedules.mockResolvedValue([
+      {
+        scheduleId: "a01000000000001AAA",
+        active: true,
+        runAllTests: true,
+        runTimeHour: 9,
+        runTimeMinute: 30,
+        timeZone: "America/New_York",
+        monday: true,
+        notificationRecipients: "admin@example.com",
+        cronExpression: "0 30 9 ? * MON",
+        selectedClassIds: []
+      }
+    ]);
     getTestClassOptions.mockResolvedValue([]);
     getRecentRuns.mockResolvedValue([
       {
@@ -121,7 +123,7 @@ describe("c-apex-test-scheduler", () => {
   });
 
   it("saves the schedule when the save button is clicked", async () => {
-    getScheduleConfiguration.mockResolvedValue(null);
+    getSchedules.mockResolvedValue([]);
     getTestClassOptions.mockResolvedValue([]);
     saveSchedule.mockResolvedValue({
       scheduleId: "a01000000000002AAA",
@@ -152,7 +154,7 @@ describe("c-apex-test-scheduler", () => {
   it.each(["admin@example.com", "admin@example.com, second@example.com", ""])(
     "sends the current textarea recipients when saving: %s",
     async (recipients) => {
-      getScheduleConfiguration.mockResolvedValue(null);
+      getSchedules.mockResolvedValue([]);
       getTestClassOptions.mockResolvedValue([]);
       saveSchedule.mockResolvedValue(null);
       const element = createElement("c-apex-test-scheduler", {
@@ -184,7 +186,7 @@ describe("c-apex-test-scheduler", () => {
   );
 
   it("surfaces an apex error message", async () => {
-    getScheduleConfiguration.mockRejectedValue({ body: { message: "Boom" } });
+    getSchedules.mockRejectedValue({ body: { message: "Boom" } });
     getTestClassOptions.mockResolvedValue([]);
 
     const element = createElement("c-apex-test-scheduler", {

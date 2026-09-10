@@ -1,6 +1,6 @@
 import { LightningElement } from "lwc";
 import { ShowToastEvent } from "lightning/platformShowToastEvent";
-import getScheduleConfiguration from "@salesforce/apex/TestSchedulerController.getScheduleConfiguration";
+import getSchedules from "@salesforce/apex/TestSchedulerController.getSchedules";
 import getTestClassOptions from "@salesforce/apex/TestSchedulerController.getTestClassOptions";
 import saveSchedule from "@salesforce/apex/TestSchedulerController.saveSchedule";
 import deactivateSchedule from "@salesforce/apex/TestSchedulerController.deactivateSchedule";
@@ -45,7 +45,70 @@ export default class ApexTestScheduler extends LightningElement {
   classOptions = [];
   selectedClassIds = [];
 
+  schedules = [];
   recentRuns = [];
+
+  get activeLabel() {
+    return this.active ? "Active" : "Inactive";
+  }
+  get scheduleRows() {
+    return this.schedules.map((config) => ({
+      ...config,
+      displayName: config.scheduleName || config.scheduleId,
+      scope: config.runAllTests
+        ? "All test classes"
+        : `${(config.selectedClassIds || []).length} selected classes`,
+      frequency:
+        WEEKDAYS.filter((day) => config[day.key])
+          .map((day) => day.label)
+          .join(", ") +
+        " at " +
+        this.toTimeInputValue(config.runTimeHour, config.runTimeMinute),
+      status: config.active
+        ? {
+            WAITING: "Scheduled",
+            ACQUIRED: "Starting",
+            EXECUTING: "Running",
+            PAUSED: "Paused",
+            BLOCKED: "Blocked",
+            PAUSED_BLOCKED: "Paused",
+            COMPLETE: "Completed",
+            ERROR: "Error",
+            DELETED: "Deleted"
+          }[config.jobState] ||
+          config.jobState ||
+          "Active"
+        : "Inactive",
+      selectedLabel:
+        config.scheduleId === this.scheduleId ? "Selected" : "Select"
+    }));
+  }
+
+  async handleSelectSchedule(event) {
+    if (this.isSaving) return;
+    const config = this.schedules.find(
+      (row) => row.scheduleId === event.target.dataset.id
+    );
+    if (!config) return;
+    this.isSaving = true;
+    this.errorMessage = undefined;
+    this.recentRuns = [];
+    this.applyConfig(config);
+    try {
+      this.recentRuns = await getRecentRuns({
+        scheduleId: this.scheduleId,
+        maxResults: 5
+      });
+    } catch (error) {
+      this.setError(error);
+    } finally {
+      this.isSaving = false;
+    }
+  }
+
+  async refreshSchedules() {
+    this.schedules = await getSchedules();
+  }
 
   get weekdayItems() {
     return WEEKDAYS.map((day) => ({
@@ -105,12 +168,17 @@ export default class ApexTestScheduler extends LightningElement {
     this.isLoading = true;
     this.errorMessage = undefined;
     try {
-      const [config, options] = await Promise.all([
-        getScheduleConfiguration(),
+      const [schedules, options] = await Promise.all([
+        getSchedules(),
         getTestClassOptions({ searchTerm: "" })
       ]);
-      this.applyConfig(config);
+      this.schedules = schedules;
+      this.applyConfig(
+        schedules.find((row) => row.scheduleId === this.scheduleId) ||
+          schedules[0] || { runAllTests: true }
+      );
       this.classOptions = options;
+      this.recentRuns = [];
       if (this.scheduleId) {
         this.recentRuns = await getRecentRuns({
           scheduleId: this.scheduleId,
@@ -223,6 +291,7 @@ export default class ApexTestScheduler extends LightningElement {
       };
       const saved = await saveSchedule({ scheduleInput: input });
       this.applyConfig(saved);
+      await this.refreshSchedules();
       this.recentRuns = this.scheduleId
         ? await getRecentRuns({ scheduleId: this.scheduleId, maxResults: 5 })
         : [];
@@ -279,6 +348,7 @@ export default class ApexTestScheduler extends LightningElement {
       this.timeZone = undefined;
       this.selectedClassIds = [];
       this.recentRuns = [];
+      await this.loadAll();
       this.notify("Success", "Schedule deleted.", "success");
     } catch (error) {
       this.setError(error);
