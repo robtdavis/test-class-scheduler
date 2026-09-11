@@ -89,6 +89,7 @@ public with sharing class TestMonitoringService {
     }
     List<Test_Run__c> toUpdate = new List<Test_Run__c>();
     List<EmailRequest> emails = new List<EmailRequest>();
+    List<Test_Run__c> notificationRuns = new List<Test_Run__c>();
     for (Test_Run__c run : staleRuns) {
       String summaryText = applyTerminalFields(
         run,
@@ -96,6 +97,7 @@ public with sharing class TestMonitoringService {
         staleNote()
       );
       toUpdate.add(run);
+      run.Notification_Sent__c = false;
       try {
         emails.add(
           notificationService.buildRequest(
@@ -104,13 +106,21 @@ public with sharing class TestMonitoringService {
             run.Failure_Details__c
           )
         );
-        run.Notification_Sent__c = true;
+        notificationRuns.add(run);
       } catch (TestNotificationService.TestNotificationException ex) {
         run.Summary__c += '\n(Notification not sent: ' + ex.getMessage() + ')';
       }
     }
+    try {
+      notificationService.sendBatch(emails);
+      for (Test_Run__c run : notificationRuns)
+        recordEmailAcceptance(run);
+    } catch (TestNotificationService.TestNotificationException ex) {
+      for (Test_Run__c run : notificationRuns) {
+        run.Summary__c += '\n(Notification not sent: ' + ex.getMessage() + ')';
+      }
+    }
     Database.update(toUpdate, AccessLevel.USER_MODE);
-    notificationService.sendBatch(emails);
   }
 
   private void applyCompletion(Test_Run__c run, PlatformRunStatus snapshot) {
@@ -166,17 +176,28 @@ public with sharing class TestMonitoringService {
     String extraNote
   ) {
     String summaryText = applyTerminalFields(run, failures, extraNote);
+    run.Notification_Sent__c = false;
     try {
       notificationService.sendRunCompletionEmail(
         run,
         summaryText,
         run.Failure_Details__c
       );
-      run.Notification_Sent__c = true;
+      recordEmailAcceptance(run);
     } catch (TestNotificationService.TestNotificationException ex) {
       run.Summary__c += '\n(Notification not sent: ' + ex.getMessage() + ')';
     }
     Database.update(new List<Test_Run__c>{ run }, AccessLevel.USER_MODE);
+  }
+
+  private void recordEmailAcceptance(Test_Run__c run) {
+    run.Notification_Sent__c = true;
+    run.Summary__c +=
+      '\nEmail accepted by Salesforce at ' +
+      Datetime.now().formatGmt('yyyy-MM-dd HH:mm:ss') +
+      ' UTC. Sender: ' +
+      UserInfo.getUserEmail() +
+      '. Inbox delivery is not confirmed.';
   }
 
   private String staleNote() {

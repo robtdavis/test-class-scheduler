@@ -1,12 +1,23 @@
 {
   "packageDirectories": [
     {
+      "versionName": "Version 1.0",
+      "versionNumber": "1.0.0.NEXT",
       "path": "force-app",
-      "default": true
+      "default": true,
+      "package": "Apex Test Scheduler",
+      "versionDescription": "",
+      "apexTestAccess": {
+        "permissionSets": ["Test_Scheduler_Admin"]
+      }
     }
   ],
   "name": "test-class-scheduler",
   "namespace": "",
   "sfdcLoginUrl": "https://login.salesforce.com",
-  "sourceApiVersion": "67.0"
+  "sourceApiVersion": "67.0",
+  "packageAliases": {
+    "Apex Test Scheduler": "0Hog80000004GB3CAM",
+    "Apex Test Scheduler@1.0.0-1": "04tg8000000L5cbAAC"
+  }
 }

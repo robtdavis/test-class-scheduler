@@ -21,7 +21,7 @@ public with sharing class TestNotificationService {
     String failureDetailsText
   ) {
     EmailRequest request = buildRequest(run, summaryText, failureDetailsText);
-    gateway.sendEmails(new List<EmailRequest>{ request });
+    sendBatch(new List<EmailRequest>{ request });
   }
 
   /** Builds the email for a single run without sending it, so callers can batch several together. */
@@ -59,7 +59,13 @@ public with sharing class TestNotificationService {
     if (requests == null || requests.isEmpty()) {
       return;
     }
-    gateway.sendEmails(requests);
+    try {
+      gateway.sendEmails(requests);
+    } catch (Exception ex) {
+      // Normalize platform EmailException and gateway failures so monitoring can
+      // retain the completed test result while recording a notification failure.
+      throw new TestNotificationException(ex.getMessage());
+    }
   }
 
   private List<String> parseRecipients(String rawRecipients) {

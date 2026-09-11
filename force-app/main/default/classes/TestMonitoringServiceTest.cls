@@ -303,4 +303,64 @@ private class TestMonitoringServiceTest {
     insert run;
     return run;
   }
+
+  @isTest
+  static void checkStatus_emailRejected_keepsCompletedRunAndCapturesFailure() {
+    Test_Schedule__c schedule = insertSchedule();
+    Test_Run__c run = insertRun(schedule.Id, 'Queued', Datetime.now());
+    FakePlatformTestRunGateway platform = new FakePlatformTestRunGateway();
+    platform.statusToReturn = buildStatus('Completed', 10, 10, 10, 0);
+    FakeEmailGateway email = new FakeEmailGateway();
+    email.throwOnSend = true;
+    buildService(platform, new FakeCoverageGateway(), email)
+      .checkStatus(run.Id);
+    Test_Run__c updated = [
+      SELECT Status__c, Notification_Sent__c, Summary__c
+      FROM Test_Run__c
+      WHERE Id = :run.Id
+    ];
+    System.assertEquals('Completed', updated.Status__c);
+    System.assertEquals(false, updated.Notification_Sent__c);
+    System.assert(
+      updated.Summary__c.contains(
+        'Notification not sent: Simulated email send failure.'
+      )
+    );
+  }
+
+  @isTest
+  static void recoverStaleRuns_emailRejected_keepsResultsAndNoFalseSentFlags() {
+    Test_Schedule__c schedule = insertSchedule();
+    Test_Run__c first = insertRun(
+      schedule.Id,
+      'Queued',
+      Datetime.now().addMinutes(-300)
+    );
+    Test_Run__c second = insertRun(
+      schedule.Id,
+      'Queued',
+      Datetime.now().addMinutes(-300)
+    );
+    FakeEmailGateway email = new FakeEmailGateway();
+    email.throwOnSend = true;
+    buildService(
+        new FakePlatformTestRunGateway(),
+        new FakeCoverageGateway(),
+        email
+      )
+      .recoverStaleRuns();
+    for (Test_Run__c run : [
+      SELECT Status__c, Notification_Sent__c, Summary__c
+      FROM Test_Run__c
+      WHERE Test_Schedule__c = :schedule.Id
+    ]) {
+      System.assertEquals('Failed', run.Status__c);
+      System.assertEquals(false, run.Notification_Sent__c);
+      System.assert(
+        run.Summary__c.contains(
+          'Notification not sent: Simulated email send failure.'
+        )
+      );
+    }
+  }
 }

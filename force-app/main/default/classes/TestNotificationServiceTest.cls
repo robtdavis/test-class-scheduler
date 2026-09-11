@@ -146,7 +146,7 @@ private class TestNotificationServiceTest {
         false,
         'Expected the simulated gateway failure to propagate'
       );
-    } catch (FakeEmailGateway.EmailSendException ex) {
+    } catch (TestNotificationService.TestNotificationException ex) {
       System.assert(ex.getMessage().contains('Simulated'));
     }
   }

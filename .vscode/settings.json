@@ -7,14 +7,14 @@
   },
   "xml.preferences.showSchemaDocumentationType": "none",
   "workbench.colorCustomizations": {
-    "statusBar.background": "#0b5cab",
+    "statusBar.background": "#05628a",
     "statusBar.foreground": "#ffffff",
-    "statusBar.border": "#1b96ff",
-    "statusBarItem.hoverBackground": "#3779ba",
-    "statusBarItem.remoteBackground": "#0f487f",
+    "statusBar.border": "#0d9dda",
+    "statusBarItem.hoverBackground": "#327e9f",
+    "statusBarItem.remoteBackground": "#0b4c68",
     "statusBarItem.remoteForeground": "#ffffff",
-    "activityBar.activeBorder": "#1b96ff",
-    "activityBarBadge.background": "#1b96ff",
+    "activityBar.activeBorder": "#0d9dda",
+    "activityBarBadge.background": "#0d9dda",
     "activityBarBadge.foreground": "#181818"
   }
 }

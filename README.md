@@ -13,6 +13,8 @@ A Salesforce Lightning app for scheduling Apex test runs, running tests on deman
 - Include org-wide code coverage when the optional Tooling API connection is configured.
 - Prevent overlapping runs for the same schedule and attempt recovery of stale runs when another run is requested.
 
+![Screenshot](images/Apex-Test-Scheduler-2.png)
+
 ## Requirements
 
 - [Salesforce CLI](https://developer.salesforce.com/tools/salesforcecli).
@@ -139,6 +141,12 @@ Salesforce can reject deployments of classes referenced by pending scheduled job
 Monitoring checks are scheduled approximately two minutes apart. Runs still in flight after three hours are eligible for recovery when another run is requested. Salesforce scheduling and execution limits apply; exact start and completion times are not guaranteed.
 
 Class discovery examines Apex class bodies for `@isTest` or `testMethod`; the search picker returns at most 200 matches. This is source-text discovery, not a complete Apex parser. The all-tests path is not limited to those 200 picker results.
+
+## Unlocked Package URL
+
+Production: https://login.salesforce.com/packaging/installPackage.apexp?p0=04tg8000000L5cbAAC
+
+Sandbox: https://test.salesforce.com/packaging/installPackage.apexp?p0=04tg8000000L5cbAAC
 
 ## Contributing
 

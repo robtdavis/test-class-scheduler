@@ -269,6 +269,12 @@
                 <strong>Total / Passed / Failed:</strong> {latestRun.totalTests}
                 / {latestRun.passedTests} / {latestRun.failedTests}
               </p>
+              <template if:true={latestRun.summary}>
+                <p class="slds-p-top_small">
+                  <strong>Run summary and email result:</strong>
+                </p>
+                <p style="white-space: pre-wrap">{latestRun.summary}</p>
+              </template>
               <template if:true={latestRun.failureDetails}>
                 <p class="slds-text-body_small">
                   <strong>Failure details:</strong>
